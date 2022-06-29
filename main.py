@@ -9,6 +9,7 @@ import threading
 def generate_analytics_for_compaing(file_original_name: str):
     df = pd.read_excel(f'{file_original_name}.xlsx')
     print('Читаем файл')
+    print('123')
     for campaign_id in pd.unique(df['campaign_id']):
         if campaign_id == 'None':
             continue
