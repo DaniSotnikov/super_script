@@ -1,13 +1,19 @@
 import pandas as pd
 import numpy as np
 from datetime import datetime
-
-name_campagin = []
 import threading
+from tkinter import *
+from tkinter import filedialog as fd
+import tkinter as tk
+import tkinter.font as tkFont
+from PIL import ImageTk, Image
+name_campagin = []
+
 
 
 def generate_analytics_for_compaing(file_original_name: str):
-    df = pd.read_excel(f'{file_original_name}.xlsx')
+    print('Yfxfkj aeyrwbb')
+    df = pd.read_excel(file_original_name)
     print('Читаем файл')
     print('123')
     for campaign_id in pd.unique(df['campaign_id']):
@@ -47,8 +53,17 @@ def drop_coloumns(name_file, df):
         print('Записываем в файл')
         new_df.to_excel(writer, index=False)
 
+def insert_file():
+    file_name = fd.askopenfilename()
+    print(file_name)
+    generate_analytics_for_compaing(file_name)
 
-time_now = datetime.now()
-generate_analytics_for_compaing('Test')
-time_after = datetime.now()
-print(time_after - time_now)
+root = Tk()
+root.title("Графическая программа на Python")
+a = root.geometry()
+fontStyle = tkFont.Font(family="Lucida Grande", size=20)
+b1 = Button(text="Сформировать отчёт", height=30,width=40, command=insert_file, bg='#ffc0cb',compound=tk.CENTER)
+b1.grid(row=500, column=100, ipadx=30, ipady=6, padx=600, pady=130)
+
+root.mainloop()
+
