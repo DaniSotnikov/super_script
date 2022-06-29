@@ -37,6 +37,7 @@ def drop_coloumns(name_file,df):
             if str(new_df.iloc[i]['msisdn'])[0] == '9':
                 new_df.loc[[i], 'msisdn'] = '7' + str(new_df.iloc[i]['msisdn'])
         new_df.rename(columns={'msisdn': 'MSISDN','status_scheme': 'Результат звонка'}, inplace=True)
+        print('Записываем в файл')
         new_df.to_excel(writer,index=False)
 time_now = datetime.now()
 generate_analytics_for_compaing('T2_SUPER_ONLINE_DISCOUNT_from_16_06_2022_00_00_00_to_29_06_2022')
