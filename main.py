@@ -6,6 +6,7 @@ import tkinter as tk
 import tkinter.font as tkFont
 import pandas as pd
 import numpy as np
+print('Ожидаем ввод файла')
 
 name_campagin = []
 from multiprocessing import Process
@@ -13,17 +14,12 @@ from multiprocessing import Process
 
 def generate_analytics_for_compaing(file_original_name: str):
     print('Читаем файл')
-    df = pd.read_excel(f'{file_original_name}')
-    procs = []
+    df = pd.read_excel(file_original_name)
     for campaign_id in pd.unique(df['campaign_id']):
         if campaign_id == 'None':
             continue
         name_campagin.append(campaign_id)
-        proc = Process(target=starting_threading, args=(campaign_id, df))
-        procs.append(proc)
-        proc.start()
-    for proc in procs:
-        proc.join()
+        starting_threading(campaign_id, df)
 
 
 def starting_threading(campaign_id, df):
@@ -39,7 +35,7 @@ def starting_threading(campaign_id, df):
                 df.drop(columns=name_columns, axis=1, inplace=True)
         print(f'Удалили столбцы из {name_new_file}')
         new_df = df.replace(np.nan, 'Недозвон', regex=True)
-        print('Заменили пустые статусы на наедозвон')
+        print('Заменили пустые статусы на Недозвон')
         count_of_rows = new_df.count()
         count_of_rows_call_date = count_of_rows['CallDateTime']
         for i in range(int(count_of_rows_call_date)):
@@ -55,7 +51,7 @@ def starting_threading(campaign_id, df):
             if str(new_df.iloc[i]['msisdn'])[0] == '9':
                 new_df.loc[[i], 'msisdn'] = '7' + str(new_df.iloc[i]['msisdn'])
         new_df.rename(columns={'msisdn': 'MSISDN', 'status_scheme': 'Результат звонка'}, inplace=True)
-        print('Записываем в файл')
+        print('Редактируем и сохраняем файл')
         new_df.to_excel(writer, index=False)
 
 def insert_file():
@@ -73,7 +69,6 @@ if __name__ == '__main__':
     fontStyle = tkFont.Font(family="Lucida Grande", size=10)
     b1 = Button(text="Сформировать отчёт", height=10, width=10, command=insert_file, bg='#ffc0cb', compound=tk.CENTER)
     b1.grid(row=500, column=100, ipadx=30, ipady=6, padx=0, pady=0)
-
     root.mainloop()
 
 
