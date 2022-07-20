@@ -26,33 +26,42 @@ def starting_threading(campaign_id, df):
     selection_by_campaign_id = df[df['campaign_id'] == campaign_id]
     print(f'Создаём файл по выборке {campaign_id}')
     homeDir = os.path.expanduser('~') + r'\Desktop'
-    name_new_file = f'Fromtech_{campaign_id}.xlsx'
+    name_new_file = f'Fromtech_000{campaign_id}.xlsx'
     selection_by_campaign_id.to_excel(os.path.join(homeDir,name_new_file))
     df = pd.read_excel(os.path.join(homeDir,name_new_file))
     with pd.ExcelWriter(os.path.join(homeDir,name_new_file)) as writer:
         for name_columns in df.columns:
-            if name_columns != 'msisdn' and name_columns != 'CallDateTime' and name_columns != 'status_scheme':
+            if name_columns != 'route_code' and name_columns != 'CallDateTime' and name_columns != 'status_scheme':
                 df.drop(columns=name_columns, axis=1, inplace=True)
         print(f'Удалили столбцы из {name_new_file}')
         new_df = df.replace(np.nan, 'Недозвон', regex=True)
         print('Заменили пустые статусы на Недозвон')
         count_of_rows = new_df.count()
         count_of_rows_call_date = count_of_rows['CallDateTime']
-        for i in range(int(count_of_rows_call_date)):
-            if new_df.iloc[i]['CallDateTime'] == 'Недозвон':
-                #new_df.loc[[i], 'CallDateTime']
-                try:
-                    date_str = datetime.datetime.strptime(str(new_df.iloc[i - 1]['CallDateTime']).replace('-', '.'), '%Y.%m.%d %H:%M:%S.%f')
-                    new_df.loc[[i], 'CallDateTime'] = date_str.strftime('%d.%m.%Y %H:%M:%S')
-                except ValueError:
-                    new_df.loc[[i], 'CallDateTime'] = str(new_df.iloc[i - 1]['CallDateTime'])
+        for i in range(int(count_of_rows_call_date )):
+            if new_df.iloc[i]['status_scheme'] in ('Исходящий запрещен, ранее состоялся диалог', 'Исходящий запрещен, был входящий перезвон'):
+                new_df.loc[[i], 'status_scheme'] = ''
+                new_df.loc[[i], 'route_code'] = ''
+                new_df.loc[[i], 'CallDateTime'] = ''
             else:
-                new_df.loc[[i], 'CallDateTime'] = datetime.datetime.strptime(str(new_df.iloc[i]['CallDateTime']).replace('-', '.'), '%Y.%m.%d %H:%M:%S.%f').strftime('%d.%m.%Y %H:%M:%S')
-            if str(new_df.iloc[i]['msisdn'])[0] == '9':
-                new_df.loc[[i], 'msisdn'] = '7' + str(new_df.iloc[i]['msisdn'])
-        new_df.rename(columns={'msisdn': 'MSISDN', 'status_scheme': 'Результат звонка'}, inplace=True)
+                if new_df.iloc[i]['CallDateTime'] == 'Недозвон':
+                    #new_df.loc[[i], 'CallDateTime']
+                    try:
+                        date_str = datetime.datetime.strptime(str(new_df.iloc[i - 1]['CallDateTime']).replace('-', '.'), '%Y.%m.%d %H:%M:%S.%f')
+                        new_df.loc[[i], 'CallDateTime'] = date_str.strftime('%d.%m.%Y %H:%M')
+                    except ValueError:
+                        new_df.loc[[i], 'CallDateTime'] = str(new_df.iloc[i - 1]['CallDateTime'])
+                else:
+                    new_df.loc[[i], 'CallDateTime'] = datetime.datetime.strptime(str(new_df.iloc[i]['CallDateTime']).replace('-', '.'), '%Y.%m.%d %H:%M:%S.%f').strftime('%d.%m.%Y %H:%M')
+                if str(new_df.iloc[i]['route_code'])[0] == '9':
+                    new_df.loc[[i], 'route_code'] = '7' + str(new_df.iloc[i]['route_code'][1:])
+        #new_new_df = new_df.set_index('status_scheme')
+        #new_new_df = new_new_df.drop(['Исходящий запрещен, ранее состоялся диалог'],axis=0)
+        filter = new_df['route_code'] != ''
+        new_df = new_df[filter]
+        new_df.rename(columns={'route_code': 'MSISDN', 'status_scheme': 'Результат звонка'}, inplace=True)
         print('Редактируем и сохраняем файл')
-        new_df.to_excel(writer, index=False)
+        new_df.to_excel(writer,index=False)
 
 def insert_file():
     file_name = fd.askopenfilename()
