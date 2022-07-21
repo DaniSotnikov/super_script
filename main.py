@@ -27,7 +27,8 @@ def starting_threading(campaign_id, df):
     print(f'Создаём файл по выборке {campaign_id}')
     homeDir = os.path.expanduser('~') + r'\Desktop'
     name_new_file = f'Fromtech_000{campaign_id}.xlsx'
-    selection_by_campaign_id.to_excel(os.path.join(homeDir,name_new_file))
+    new_selection_withour_inbound = selection_by_campaign_id[selection_by_campaign_id['call_direction'] == 'outbound']
+    new_selection_withour_inbound.to_excel(os.path.join(homeDir,name_new_file))
     df = pd.read_excel(os.path.join(homeDir,name_new_file))
     with pd.ExcelWriter(os.path.join(homeDir,name_new_file)) as writer:
         for name_columns in df.columns:
@@ -37,8 +38,8 @@ def starting_threading(campaign_id, df):
         new_df = df.replace(np.nan, 'Недозвон', regex=True)
         print('Заменили пустые статусы на Недозвон')
         count_of_rows = new_df.count()
-        count_of_rows_call_date = count_of_rows['CallDateTime']
-        for i in range(int(count_of_rows_call_date )):
+        count_of_rows_route_code = count_of_rows['route_code']
+        for i in range(int(count_of_rows_route_code )):
             if new_df.iloc[i]['status_scheme'] in ('Исходящий запрещен, ранее состоялся диалог', 'Исходящий запрещен, был входящий перезвон'):
                 new_df.loc[[i], 'status_scheme'] = ''
                 new_df.loc[[i], 'route_code'] = ''
